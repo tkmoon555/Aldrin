@@ -1,0 +1,17 @@
+# MoveIt uses this configuration for controller management
+
+moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
+
+moveit_simple_controller_manager:
+  controller_names:
+    - Aldrin_controller
+
+  Aldrin_controller:
+    type: FollowJointTrajectory
+    action_ns: follow_joint_trajectory
+    default: true
+    joints:
+      - base_to_left_leg_joint
+      - left_inverted_wheel_joint
+      - base_to_right_leg_joint
+      - right_inverted_wheel_joint

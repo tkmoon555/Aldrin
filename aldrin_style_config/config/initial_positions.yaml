@@ -1,0 +1,7 @@
+# Default initial positions for simplebot's ros2_control fake system
+
+initial_positions:
+  base_to_left_leg_joint: 0
+  base_to_right_leg_joint: 0
+  left_inverted_wheel_joint: 0
+  right_inverted_wheel_joint: 0

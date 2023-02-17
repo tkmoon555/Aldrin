@@ -1,0 +1,26 @@
+# This config file is used by ros2_control
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz
+
+    Aldrin_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+Aldrin_controller:
+  ros__parameters:
+    joints:
+      - base_to_left_leg_joint
+      - left_inverted_wheel_joint
+      - base_to_right_leg_joint
+      - right_inverted_wheel_joint
+    command_interfaces:
+      - position
+      - velocity
+    state_interfaces:
+      - position
+      - velocity
+      - effort

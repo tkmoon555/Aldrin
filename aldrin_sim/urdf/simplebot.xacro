@@ -1,0 +1,201 @@
+<?xml version="1.0"?>
+<robot name="simplebot" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <material name="blue">
+        <color rgba="0 0 0.8 1" />
+    </material>
+    <material name="black">
+        <color rgba="0 0 0 1" />
+    </material>
+    <material name="white">
+        <color rgba="1 1 1 1" />
+    </material>
+
+    <material name="red">
+        <color rgba="1 0 0 1" />
+    </material>
+
+    <material name="olive">
+        <color rgba="0.502 0.502 0 1" />
+    </material>
+
+    <material name="forest_green">
+        <color rgba="0.133 0.545 0.133 1" />
+    </material>
+
+    <xacro:property name="width" value="0.15" />
+    <xacro:property name="bodylen" value="0.8" />
+    <xacro:property name="wheel_width" value="0.2" />
+    <xacro:property name="wheeldiam" value="0.07" />
+    <xacro:property name="baselen" value="0.4" />
+    <xacro:property name="head_width" value="0.1" />
+    <xacro:property name="pi" value="3.141592" />
+
+    <xacro:property name="leglen" value="0.4" />
+
+    <xacro:macro name="default_inertial" params="mass">
+        <inertial>
+            <mass value="${mass}" />
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+            <origin />
+        </inertial>
+    </xacro:macro>
+
+
+    <link name="base_link">
+        <visual>
+            <geometry>
+                <box size="0.1 ${width} ${bodylen}" />
+            </geometry>
+            <material name="forest_green" />
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.1 ${width} ${bodylen}" />
+            </geometry>
+        </collision>
+        <xacro:default_inertial mass="10" />
+    </link>
+
+
+    <xacro:macro name="wheel" params="prefix suffix reflect">
+
+        <link name="${prefix}_${suffix}_wheel">
+            <visual>
+                <origin xyz="0 0 0" rpy="${pi/2} 0 0" />
+                <geometry>
+                    <cylinder radius="${wheeldiam/2}" length="0.1" />
+                </geometry>
+                <material name="black" />
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="${pi/2} 0 0" />
+                <geometry>
+                    <cylinder radius="${wheeldiam/2}" length="0.1" />
+                </geometry>
+            </collision>
+            <xacro:default_inertial mass="1" />
+        </link>
+        <joint name="${prefix}_${suffix}_wheel_joint" type="continuous">
+            <axis xyz="0 1 0" rpy="0 0 0" />
+            <parent link="${prefix}_base" />
+            <child link="${prefix}_${suffix}_wheel" />
+            <origin xyz="${baselen*reflect/3} 0 -${wheeldiam/2+.05}" rpy="0 0 0" />
+        </joint>
+    </xacro:macro>
+
+    <xacro:macro name="leg" params="prefix reflect">
+        <link name="${prefix}_leg">
+            <visual>
+                <geometry>
+                    <box size="${leglen} 0.1 0.2" />
+                </geometry>
+                <origin xyz="0 ${reflect*(width+.02)} -${leglen/2}" rpy="0 ${pi/2} 0" />
+                <material name="olive" />
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="${leglen} 0.1 0.2" />
+                </geometry>
+                <origin xyz="0 ${reflect*(width+.02)} -${leglen/2}" rpy="0 ${pi/2} 0" />
+            </collision>
+            <xacro:default_inertial mass="10" />
+        </link>
+
+        <joint name="base_to_${prefix}_leg_joint" type="revolute">
+            <child link="${prefix}_leg" />
+            <parent link="base_link" />
+            <origin xyz="0 0 0.0" rpy="0 0 0" />
+            <axis xyz="0 1 0" rpy="0 0 0" />
+            <limit upper="${90/180*pi}" lower="-${90/180*pi}" effort="10" velocity="10" />
+        </joint>
+
+        <link name="${prefix}_base">
+            <visual>
+                <geometry>
+                    <box size="0.1 0.1 0.1" />
+                </geometry>
+                <material name="olive" />
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="0.1 0.1 0.1" />
+                </geometry>
+            </collision>
+            <xacro:default_inertial mass="10" />
+        </link>
+
+        <joint name="${prefix}_base_joint" type="fixed">
+            <parent link="${prefix}_leg" />
+            <child link="${prefix}_base" />
+            <origin xyz="0 ${reflect*(width+.02)} ${-leglen}" />
+        </joint>
+        <xacro:wheel prefix="${prefix}" suffix="inverted" reflect="0" />
+    </xacro:macro>
+    <xacro:leg prefix="right" reflect="-1" />
+    <xacro:leg prefix="left" reflect="1" />
+
+    <link name="head">
+        <visual>
+            <geometry>
+                <sphere radius="${head_width}" />
+            </geometry>
+            <material name="red" />
+        </visual>
+        <collision>
+            <geometry>
+                <sphere radius="${head_width}" />
+            </geometry>
+        </collision>
+        <xacro:default_inertial mass="2" />
+    </link>
+    <joint name="head_swivel" type="fixed">
+        <parent link="base_link" />
+        <child link="head" />
+        <axis xyz="0 0 1" />
+        <origin xyz="0 0 ${bodylen/2+head_width-0.01}" />
+    </joint>
+
+
+    <gazebo reference="base_link">
+        <material>Gazebo/Green</material>
+    </gazebo>
+    <gazebo reference="head">
+        <material>Gazebo/Red</material>
+    </gazebo>
+
+    <gazebo reference="right_leg">
+        <material>Gazebo/WoodPallet</material>
+    </gazebo>
+    <gazebo reference="left_leg">
+        <material>Gazebo/WoodPallet</material>
+    </gazebo>
+    <gazebo reference="right_base">
+        <material>Gazebo/WoodPallet</material>
+    </gazebo>
+    <gazebo reference="left_base">
+        <material>Gazebo/WoodPallet</material>
+    </gazebo>
+    <gazebo reference="right_inverted_wheel">
+        <material>Gazebo/Black</material>
+    </gazebo>
+    <gazebo reference="left_inverted_wheel">
+        <material>Gazebo/Black</material>
+    </gazebo>
+
+    <!-- ros2_control -->
+    <ros2_control name="GazeboSystem" type="system">
+        <hardware>
+            <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+        </hardware>
+
+    </ros2_control>
+    <gazebo>
+        <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+            <robot_param>robot_description</robot_param>
+            <robot_param_node>robot_state_publisher</robot_param_node>
+            <parameters>$(find aldrin_sim)/config/move_group_controller.yaml</parameters>
+            <!-- <parameters>$(find aldrin_gazebo_ros2_control)/config/manta_v2_trajectory_controller.yaml</parameters> -->
+        </plugin>
+    </gazebo>
+</robot>
